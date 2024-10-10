@@ -23,8 +23,9 @@ app.get('/getdata', async (req: Request, res: Response) => {
 app.use(express.static('src/client'));
 
 // Start the server
-const port = process.env.PORT || 4000;
+const externalUrl = process.env.RENDER_EXTERNAL_URL;
+const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 4080;
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on ${port}`);
 });
 
