@@ -24,8 +24,13 @@ app.use(express.static('src/client'));
 
 // Start the server
 const externalUrl = process.env.RENDER_EXTERNAL_URL;
-const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 4080;
-app.listen(port, () => {
-  console.log(`Server is running on ${port}`);
-});
+const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 8000;
 
+if (externalUrl) {   
+    const hostname = '0.0.0.0';
+    app.listen(port, hostname, () => {
+      console.log(`Server locally running at http://${hostname}:${port}/ and 
+      from outside on ${externalUrl}`);   
+    }); 
+} 
+  
