@@ -23,7 +23,7 @@ app.get('/getdata', async (req: Request, res: Response) => {
 app.use(express.static('src/client'));
 
 // Start the server
-const port = 3000;
+const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
