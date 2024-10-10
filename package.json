@@ -1,0 +1,19 @@
+{
+  "name": "prvi-projekt-auth",
+  "version": "1.0.0",
+  "description": "Prvi projekt iz naprednog weba",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "auth0": "^4.10.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/auth0": "^3.3.10",
+    "@types/pg": "^8.11.10"
+  }
+}
