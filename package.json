@@ -4,19 +4,22 @@
   "description": "Prvi projekt iz naprednog weba",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run clean; tsc; npm run copy-views; npm run copy-views",
+    "clean": "rm -rf dist",
+    "copy-views": "cp -r src/views/ dist/views/",
+    "start": "node dist/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",
+    "@types/ejs": "^3.1.5",
     "@types/node": "^22.7.5",
     "auth0": "^4.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.21.1",
     "pg": "^8.13.0"
   },
