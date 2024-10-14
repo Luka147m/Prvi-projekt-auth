@@ -4,7 +4,7 @@ import path from 'path';
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'src/client')));
+app.use(express.static(path.join(__dirname, 'dist/views')));
 app.set("view engine", "ejs");
 
 const externalUrl = process.env.EXTERNAL_URL || null;
@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 
 app.get('/', async (req: Request, res: Response) => {
-  res.render("src/index")
+  res.render("index")
 })
 
 app.get('/getdata', async (req: Request, res: Response) => {
