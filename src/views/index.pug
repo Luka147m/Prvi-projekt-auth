@@ -1,0 +1,24 @@
+doctype html
+html
+  head
+    title Fetch from DB
+    script.
+      async function fetchData() {
+        try {
+          const response = await fetch('/getdata', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await response.json();
+          document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          document.getElementById('result').innerText = 'Failed to fetch data.';
+        }
+      }
+  body
+    h1 Fetch Data from Database
+    button(onclick="fetchData()") Fetch Data
+    pre#result No data fetched yet.

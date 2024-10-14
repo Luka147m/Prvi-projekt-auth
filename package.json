@@ -14,14 +14,14 @@
   "dependencies": {
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",
-    "@types/ejs": "^3.1.5",
     "@types/node": "^22.7.5",
+    "@types/pug": "^2.0.10",
     "auth0": "^4.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
     "express": "^4.21.1",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "pug": "^3.0.3"
   },
   "devDependencies": {
     "@types/auth0": "^3.3.10",
