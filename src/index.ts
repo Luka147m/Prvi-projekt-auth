@@ -4,7 +4,8 @@ import path from 'path';
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'dist/views')));
+app.use(express.static(path.join(__dirname, 'dist/public')));
+app.set('views', path.join(__dirname, 'dist/views'));
 app.set("view engine", "ejs");
 
 const externalUrl = process.env.EXTERNAL_URL || null;
