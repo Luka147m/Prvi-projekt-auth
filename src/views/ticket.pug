@@ -16,55 +16,78 @@ html(lang="en")
                 align-items: center;
                 justify-content: center;
             }
-            .qr-code {
-                margin-top: 20px;
-            }
             .header {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
+                width: 100%;
                 margin-bottom: 20px;
             }
             .user-info {
+                font-size: 18px;
                 font-weight: bold;
             }
-            .logout-btn {
-                background-color: #f44336;
+            .ticket {
+                border: 2px solid #007BFF;
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                width: 80%;
+                max-width: 600px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            .qr-code {
+                margin-right: 20px;
+                flex-shrink: 0;
+            }
+            .ticket-details {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .action-btn {
+                background-color: #008CBA;
                 color: white;
                 border: none;
                 padding: 10px;
                 cursor: pointer;
                 border-radius: 5px;
+                font-size: 16px;
+                margin-top: 10px;
             }
+
     body
+        // Header section with user info and buttons for login/logout
+        .header
+            if !username
+                .user-info Dobrodošli!
+                button(action="button" class="action-btn" onclick="location.href='/login'") Prijavi se
+            else
+                .user-info Pozdrav #{username}!
+                button(action="button" class="action-btn" onclick="location.href='/logout'") Odjava
 
-    .header
-        if user
-            .user-info Hello #{JSON.parse(user).name || JSON.parse(user).sub}!
-            button.logout-btn(onclick="location.href='/logout'") Logout
-        else
-            .user-info You are not logged in
-            h1 Ticket Details
+        h1 Ticket Details
 
-            p
-                | Name: #{firstName} #{lastName}
+        // Ticket container
+        div.ticket
+            div.qr-code(id="qrCodeContainer") // QR Code container
 
-            p
-                | VATIN: #{vatin}
-            p
-                | Kupljena: #{timestamp}
+            // Ticket details on the right side
+            div.ticket-details
+                p
+                    | Ime: #{firstName} #{lastName}
+                p
+                    | VATIN: #{vatin}
+                p
+                    | Stvoreno: #{createdAt}
 
-            div.qr-code(id="qrCodeContainer")
+        script.
+            var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
 
-            script.
-                var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
-
-                var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
-                    text: qrCodeUrl,
-                    width: 128,
-                    height: 128,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
-
+            var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
+                text: qrCodeUrl,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
