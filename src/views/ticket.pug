@@ -19,27 +19,52 @@ html(lang="en")
             .qr-code {
                 margin-top: 20px;
             }
-
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .user-info {
+                font-weight: bold;
+            }
+            .logout-btn {
+                background-color: #f44336;
+                color: white;
+                border: none;
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
     body
-        h1 Ticket Details
 
-        p
-            | Name: #{firstName} #{lastName}
+    .header
+        if user
+            .user-info Hello #{JSON.parse(user).name || JSON.parse(user).sub}!
+            button.logout-btn(onclick="location.href='/logout'") Logout
+        else
+            .user-info You are not logged in
+            h1 Ticket Details
 
-        p
-            | VATIN: #{vatin}
+            p
+                | Name: #{firstName} #{lastName}
 
-        div.qr-code(id="qrCodeContainer") // QR Code container
+            p
+                | VATIN: #{vatin}
+            p
+                | Kupljena: #{timestamp}
 
-        script.
-            var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
+            div.qr-code(id="qrCodeContainer")
 
-            var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
-                text: qrCodeUrl,
-                width: 128,
-                height: 128,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+            script.
+                var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
+
+                var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
+                    text: qrCodeUrl,
+                    width: 128,
+                    height: 128,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
 

@@ -1,14 +1,37 @@
 import pool from './database';
 import express, { Request, Response } from 'express';
 import path from 'path';
+import https from 'https';
+import fs from 'fs';
+import { auth, requiresAuth } from 'express-openid-connect';
 
 const app = express();
+
+const externalUrl = process.env.EXTERNAL_URL || null;
+const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 8000;
+const baseUrl = process.env.NODE_ENV === 'production'
+  ? 'https://prvi-projekt-auth-web.onrender.com'
+  : `https://localhost:${port}`;
+
+const config = {
+  authRequired: false,
+  idpLogout: true, //login not only from the app, but also from identity provider
+  secret: process.env.SECRET,
+  baseURL: baseUrl,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.AUTH0_DOMAIN,
+  clientSecret: process.env.CLIENT_SECRET,
+  authorizationParams: {
+    response_type: 'code',
+  },
+};
+
+app.use(auth(config));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist/public')));
 app.set('views', path.join(__dirname, '../dist/views'));
 app.set("view engine", "pug");
 
-const externalUrl = process.env.EXTERNAL_URL || null;
 
 app.use((req: Request, res: Response, next) => {
   res.locals.externalUrl = externalUrl || 'http://localhost:8000';
@@ -17,17 +40,34 @@ app.use((req: Request, res: Response, next) => {
 
 
 app.get('/', async (req: Request, res: Response) => {
-  res.render("index")
+
+  let username: string | undefined;
+  if (req.oidc.isAuthenticated()) {
+    username = req.oidc.user?.name ?? req.oidc.user?.sub;
+  }
+  res.render('index', { username });
+
 })
 
-app.get('/generateTicket', async (req: Request, res: Response) => {
-  
-  const baseUrl = process.env.NODE_ENV === 'production' 
-  ? 'https://prvi-projekt-auth-web.onrender.com' 
-  : `http://localhost:${port}`;
+app.get("/login", (req: Request, res: Response) => {
+  res.oidc.login({
+    returnTo: '/',
+    authorizationParams: { screen_hint: "signup" },
+  });
+});
+
+app.get("/logout", (req: Request, res: Response) => {
+  res.oidc.logout({
+    returnTo: '/'
+  });
+});
+
+app.get('/generateTicket', requiresAuth(), async (req: Request, res: Response) => {
+  const user = JSON.stringify(req.oidc.user);
 
   res.render("generateTicket", {
-    baseUrl: baseUrl
+    baseUrl: baseUrl,
+    user: user
   })
 })
 
@@ -41,14 +81,14 @@ async function generateTicket({ vatin, firstName, lastName }: TicketParams): Pro
   const client = await pool.connect();
   let ticketId: string;
   try {
-    await client.query('BEGIN'); 
+    await client.query('BEGIN');
     const result = await client.query('SELECT p.ticket_count FROM people AS p WHERE p.vatin = $1', [vatin]);
     const ticketCount = result.rows.length !== 0 ? result.rows[0].ticket_count : 0;
-    
+
     if (ticketCount >= 3) {
       throw new Error('Za jedan OIB se smije generirati do (uključivo) 3 ulaznice.');
     }
-    
+
     await client.query(
       'INSERT INTO people (vatin, ticket_count) VALUES ($1, $2) ON CONFLICT (vatin) DO UPDATE SET ticket_count = people.ticket_count + 1',
       [vatin, ticketCount + 1]
@@ -60,7 +100,7 @@ async function generateTicket({ vatin, firstName, lastName }: TicketParams): Pro
     );
 
     ticketId = ticketInsertResult.rows[0].id;
-    
+
     await client.query('INSERT INTO tickets (vatin, first_name, last_name) VALUES ($1, $2, $3)', [vatin, firstName, lastName]);
 
     await client.query('COMMIT');
@@ -88,7 +128,7 @@ app.post('/generateTicket', async (req: Request, res: Response): Promise<Respons
     return res.status(201).json({ message: 'Ticket generated successfully', ticketId: ticketId });
   } catch (error) {
     // console.error('Failed to generate ticket:', error);
-    
+
     const errorMessage = (error as Error).message || 'Failed to generate ticket';
     return res.status(500).json({ error: errorMessage });
   }
@@ -105,12 +145,13 @@ app.get('/ticketCount', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/ticket/:id', async (req: Request, res: Response) => {
+app.get('/ticket/:id', requiresAuth(), async (req: Request, res: Response) => {
   const ticketId = req.params.id;
+  const user = JSON.stringify(req.oidc.user);
 
   try {
     const result = await pool.query(
-      'SELECT vatin, first_name, last_name FROM tickets WHERE id = $1',
+      'SELECT vatin, first_name, last_name, created_at FROM tickets WHERE id = $1',
       [ticketId]
     );
 
@@ -120,25 +161,20 @@ app.get('/ticket/:id', async (req: Request, res: Response) => {
 
     const ticket = result.rows[0];
 
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://prvi-projekt-auth-web.onrender.com' 
-      : `http://localhost:${port}/`;
-
     res.render('ticket', {
       ticketId: ticketId,
       vatin: ticket.vatin,
       firstName: ticket.first_name,
       lastName: ticket.last_name,
-      baseUrl: baseUrl
+      timestamp: ticket.created_at,
+      baseUrl: baseUrl,
+      user: user
     });
   } catch (error) {
     console.error('Error retrieving ticket:', error);
     res.status(500).send('Server Error');
   }
 });
-
-
-const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 8000;
 
 if (externalUrl) {
   const hostname = '0.0.0.0';
@@ -147,10 +183,14 @@ if (externalUrl) {
     console.log(`Also available from outside via ${externalUrl}`);
   });
 } else {
-  app.listen(port, () => {
-    console.log(`Server running locally at http://localhost:${port}/`);
-  });
+  https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+  }, app)
+    .listen(port, function () {
+      console.log(`Server running locally at https://localhost:${port}/`);
+    });
 }
 
-  
+
 

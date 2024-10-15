@@ -2,9 +2,57 @@ doctype html
 html
   head
     title Početna stranica
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .user-info {
+        font-size: 18px;
+        font-weight: bold;
+      }
+      .action-btn {
+        background-color: #008CBA;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      .action-btn.logout {
+        background-color: #f44336;
+      }
+      .ticket-info {
+        font-size: 16px;
+        margin-top: 20px;
+      }
   body
+    // Header section with user info and buttons for login/logout
+    .header
+      if !username
+        .user-info Dobrodošli!
+        button.action-btn(onclick="location.href='/login'") Prijavi se
+      else
+        .user-info Pozdrav #{username}!
+        button.action-btn.logout(onclick="location.href='/logout'") Odjava
+
     h1 e-Ulaznice - Početna
-    pre#result Osvježavam.
+
+    // Display ticket count
+    p.ticket-info Broj ukupno generiranih ulaznica:
+    pre#result Osvježavam...
+
+    // Button for generating a new ticket
+    button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
+
+    // Script to fetch and update the ticket count every 5 seconds
     script.
       function fetchTicketCount() {
         fetch('/ticketCount')
@@ -17,4 +65,3 @@ html
 
       setInterval(fetchTicketCount, 5000);
       fetchTicketCount();
-    button(onclick="location.href='/generateTicket'") Kupi ulaznicu

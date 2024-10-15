@@ -17,7 +17,32 @@ html
       .qr-code {
         margin-top: 20px;
       }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .user-info {
+        font-weight: bold;
+      }
+      .logout-btn {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
   body
+    // Header section with user info and logout button
+    .header
+      if user
+        .user-info Hello #{JSON.parse(user).name || JSON.parse(user).sub}!
+        button.logout-btn(onclick="location.href='/logout'") Logout
+      else
+        .user-info You are not logged in
+
     h1 Ticket Generation Form
 
     form(id="ticketForm")
