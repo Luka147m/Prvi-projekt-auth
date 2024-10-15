@@ -1,0 +1,46 @@
+doctype html
+html(lang="en")
+    head
+        script(src="/js/qrcode.min.js" type="text/javascript")
+        meta(charset="UTF-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1.0")
+        title Ticket Details
+        link(rel="icon" href="/favicon.ico" type="image/x-icon")
+
+        style.
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .qr-code {
+                margin-top: 20px;
+            }
+
+    body
+        h1 Ticket Details
+
+        p
+            | Name: #{firstName} #{lastName}
+
+        p
+            | VATIN: #{vatin}
+
+        div.qr-code(id="qrCodeContainer") // QR Code container
+
+        img(src="/20240403_165321.jpg" alt="mica")
+        script.
+            var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
+
+            var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
+                text: qrCodeUrl,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+

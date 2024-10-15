@@ -1,24 +1,20 @@
 doctype html
 html
   head
-    title Fetch from DB
-    script.
-      async function fetchData() {
-        try {
-          const response = await fetch('/getdata', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          const data = await response.json();
-          document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-          document.getElementById('result').innerText = 'Failed to fetch data.';
-        }
-      }
+    title Početna stranica
   body
-    h1 Fetch Data from Database
-    button(onclick="fetchData()") Fetch Data
-    pre#result No data fetched yet.
+    h1 e-Ulaznice - Početna
+    pre#result Osvježavam.
+    script.
+      function fetchTicketCount() {
+        fetch('/ticketCount')
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('result').textContent = "Broj ukupno generiranih ulaznica: " + data.count;
+          })
+          .catch(error => console.error('Error fetching data', error));
+      }
+
+      setInterval(fetchTicketCount, 5000);
+      fetchTicketCount();
+    button(onclick="location.href='/ticket'") Kupi ulaznicu

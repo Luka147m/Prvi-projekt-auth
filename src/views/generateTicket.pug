@@ -1,0 +1,99 @@
+doctype html
+html
+  head
+    script(href="/js/qrcode.min.js" type="text/javascript")
+    title Ticket Generation
+    link(rel="icon" href="/favicon.ico" type="image/x-icon")
+
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .status {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+      .qr-code {
+        margin-top: 20px;
+      }
+  body
+    h1 Ticket Generation Form
+
+    form(id="ticketForm")
+      div
+        label(for="vatin") VATIN:
+        input(type="text" id="vatin" name="vatin" required)
+      div
+        label(for="firstName") First Name:
+        input(type="text" id="firstName" name="firstName" required)
+      div
+        label(for="lastName") Last Name:
+        input(type="text" id="lastName" name="lastName" required)
+      div
+        button(type="submit") Generate Ticket
+
+    div(class="status" id="statusMessage")
+
+    // QR Code display container
+    div(id="qrCodeContainer")
+
+    script.
+      document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+          vatin: document.getElementById('vatin').value,
+          firstName: document.getElementById('firstName').value,
+          lastName: document.getElementById('lastName').value,
+        };
+        console.log("Form data: ", formData)
+
+        try {
+          const response = await fetch('/generateTicket', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+
+          const result = await response.json();
+          console.log('Result from server:', result);
+
+          if (response.ok) {
+            document.getElementById('statusMessage').textContent = result.message;
+            document.getElementById('statusMessage').style.color = 'green';
+
+            document.getElementById('qrCodeContainer').innerHTML = '';
+
+            const ticketId = result.ticketId;
+            console.log('Ticket ID for QR Code:', ticketId);
+
+            if (ticketId) {
+              console.log('Attempting to generate QR code with ticket ID:', ticketId);
+              var qrCodeUrl = "#{baseUrl}/ticket/" + ticketId;
+              var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
+                text: qrCodeUrl,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+              });
+
+            } else {
+              console.error('No ticket ID received for QR code generation.');
+              document.getElementById('statusMessage').textContent = 'No ticket ID received.';
+              document.getElementById('statusMessage').style.color = 'red';
+            }
+          } else {
+            document.getElementById('statusMessage').textContent = result.error;
+            document.getElementById('statusMessage').style.color = 'red';
+          }
+        } catch (error) {
+          console.error('Fetch error:', error); 
+          document.getElementById('statusMessage').textContent = 'An error occurred. Please try again.';
+          document.getElementById('statusMessage').style.color = 'red';
+        }
+      });
