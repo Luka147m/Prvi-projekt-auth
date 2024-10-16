@@ -40,9 +40,18 @@ body {
   border-radius: 5px;
   font-size: 16px;
 }
-.action-btn.logout {
-  background-color: #f44336;
+
+.login-btn {
+  background-color: #008cba;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-left: auto;
 }
+
 .ticket-info {
   font-size: 16px;
   margin-top: 20px;
@@ -51,9 +60,6 @@ body {
 .status {
   margin-top: 20px;
   font-weight: bold;
-}
-.qr-code {
-  margin-top: 20px;
 }
 
 .logout-btn {
@@ -65,10 +71,28 @@ body {
   border-radius: 5px;
   font-size: 1.2em;
   height: fit-content;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+.frontpage-btn {
+  background-color: white;
+  color: black;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid #007bff;
+  font-size: 1.2em;
+  height: fit-content;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-right: 10px;
+}
+
 .result {
-  font-size: 36px;
+  font-size: 10em;
   font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 20px;
 }
 
 .form-container {
@@ -159,4 +183,88 @@ body {
   font-size: 0.9em;
   color: #777;
   margin: 0px;
+}
+
+.ticket {
+  border: 2px solid #007bff;
+  border-radius: 10px;
+  padding: 0;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-header {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: left;
+}
+
+.ticket-body {
+  display: flex;
+  padding: 20px;
+}
+
+.qr-code {
+  margin-right: 20px;
+}
+
+.qr-code img {
+  width: 100px;
+  height: 100px;
+}
+
+.ticket-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ticket-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 0px;
+}
+
+.ticket-info p {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.ticket-separator {
+  border-left: 2px solid #007bff;
+  margin: 0 20px;
+  height: 100%;
+}
+
+.ticket-footer {
+  text-align: right;
+  font-size: 1em;
+  margin-top: 10px;
+  color: #777;
+}
+
+.qr-code-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-code-container:empty {
+  display: none;
 }

@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title Početna stranica
+    title Početna stranica | e-Ulaznice
 
     link(rel="icon" href="/favicon.ico" type="image/x-icon")
     link(rel="stylesheet" href="/css/style.css")
@@ -17,8 +17,7 @@ html
             p.profile-sub #{JSON.parse(user).sub}
         button.logout-btn(onclick="location.href='/logout'") Logout
       else
-        .user-info Niste prijavljeni
-        button.action-btn(onclick="location.href='/login'") Prijava
+        button.login-btn(onclick="location.href='/login'") Prijava
 
     a(href="/" style="text-decoration: none; color: black;")
       h1 e-Ulaznice - Početna
@@ -27,7 +26,10 @@ html
     p.ticket-info Broj ukupno generiranih ulaznica:
     pre#result.result Osvježavam...
 
-    button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
+    if user
+      button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
+    else 
+      h3 Da bi ste kupili ulaznicu prvo se morate prijaviti
 
     script.
       function fetchTicketCount() {

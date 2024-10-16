@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title Ticket Generation
+    title Generiranje ulaznica | e-Ulaznice
 
     script(src="/js/qrcode.min.js" type="text/javascript")
     link(rel="icon" href="/favicon.ico" type="image/x-icon")
@@ -16,12 +16,12 @@ html
             p.profile-name #{JSON.parse(user).name}
             p.profile-email #{JSON.parse(user).email}
             p.profile-sub #{JSON.parse(user).sub}
-        button.logout-btn(onclick="location.href='/logout'") Logout
+        div.button-container
+          button.frontpage-btn(onclick="window.location.href='/'") Početna
+          button.logout-btn(onclick="location.href='/logout'") Logout
       else
         .user-info Niste prijavljeni
-
-    a(href="/" style="text-decoration: none; color: black;") 
-      h1 e-Ulaznice
+        button.login-btn(onclick="location.href='/login'") Prijava
 
     h1 Generiranje ulaznice
 
@@ -30,8 +30,8 @@ html
 
       form(id="ticketForm")
         div
-          label(for="vatin") VATIN:
-          input(type="text" id="vatin" name="vatin" required placeholder="Unesite VATIN" maxlength="11")
+          label(for="vatin") OIB:
+          input(type="text" id="vatin" name="vatin" required placeholder="Unesite OIB" maxlength="11")
         div
           label(for="firstName") Ime:
           input(type="text" id="firstName" name="firstName" required placeholder="Unesite vaše ime")
@@ -48,9 +48,10 @@ html
             button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Prijavite se
 
 
-    div(class="status" id="statusMessage")
+    div
+      h3.status(id="statusMessage")
 
-    div(id="qrCodeContainer")
+    div.qr-code-container(id="qrCodeContainer")
 
     script.
       document.getElementById('ticketForm').addEventListener('submit', async function(e) {
@@ -70,7 +71,7 @@ html
         errorMessage.textContent = '';
 
         if (!vatinPattern.test(formData.vatin)) {
-          errorMessage.textContent = 'VATIN mora biti broj od 11 znamenaka';
+          errorMessage.textContent = 'OIB mora biti broj od 11 znamenaka';
           return;
         }
 
@@ -116,6 +117,11 @@ html
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
               });
+
+              const textElement = document.createElement('p');
+              textElement.innerHTML = `QR kod Vaše ulaznice<br>Dostupan i na sljedećem <a href="${qrCodeUrl}">linku</a>`;
+              textElement.style.textAlign = 'center';
+              qrCodeContainer.prepend(textElement);
 
             } else {
               console.error('No ticket ID received for QR code generation.');

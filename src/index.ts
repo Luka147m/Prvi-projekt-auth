@@ -97,8 +97,6 @@ async function generateTicket({ vatin, firstName, lastName }: TicketParams): Pro
 
     ticketId = ticketInsertResult.rows[0].id;
 
-    await client.query('INSERT INTO tickets (vatin, first_name, last_name) VALUES ($1, $2, $3)', [vatin, firstName, lastName]);
-
     await client.query('COMMIT');
     // console.log('Ticket generated successfully with ID:', ticketId);
     return ticketId;

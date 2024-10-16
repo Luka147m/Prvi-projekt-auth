@@ -2,7 +2,7 @@ doctype html
 html(lang="en")
     head
 
-        title Info o ulaznici
+        title Info o ulaznici | e-Ulaznice
 
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
@@ -20,26 +20,32 @@ html(lang="en")
                         p.profile-name #{JSON.parse(user).name}
                         p.profile-email #{JSON.parse(user).email}
                         p.profile-sub #{JSON.parse(user).sub}
-                button.logout-btn(onclick="location.href='/logout'") Logout
+                div.button-container
+                    button.frontpage-btn(onclick="window.location.href='/'") Početna
+                    button.logout-btn(onclick="location.href='/logout'") Logout
             else
                 .user-info Niste prijavljeni
-                button.action-btn(onclick="location.href='/login'") Prijava
+                button.login-btn(onclick="location.href='/login'") Prijava
 
-        a(href="/" style="text-decoration: none; color: black;") 
-            h1 e-Ulaznice
         h1 Informacije o ulaznici
 
         if user
             div.ticket
-                div.qr-code(id="qrCodeContainer")
+                div.ticket-header Ulaznica
 
-                div.ticket-details
-                    p
-                        | Ime: #{firstName} #{lastName}
-                    p
-                        | VATIN: #{vatin}
-                    p
-                        | Stvorena: #{timestamp}
+                div.ticket-body
+                    div.qr-code(id="qrCodeContainer")
+
+                    div.ticket-separator
+
+                    div.ticket-details
+                        div.ticket-info
+                            p Ime: #{firstName}
+                            p Prezime: #{lastName}
+                            p OIB: #{vatin}
+
+                        div.ticket-footer(data-timestamp=timestamp)
+                            p Stvorena:
 
             script.
                 var qrCodeUrl = "#{baseUrl}/ticket/#{ticketId}";
@@ -51,4 +57,25 @@ html(lang="en")
                     colorDark : "#000000",
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
+                });
+
+            script.
+                document.addEventListener('DOMContentLoaded', function () {
+                    const footer = document.querySelector('.ticket-footer');
+                    const timestamp = footer.getAttribute('data-timestamp');
+                    const date = new Date(timestamp);
+
+                    const options = {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    };
+
+                    const formattedDate = date.toLocaleDateString('hr-HR', options);
+
+                    footer.querySelector('p').innerHTML += ` ${formattedDate}`;
                 });
