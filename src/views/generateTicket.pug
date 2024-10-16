@@ -1,66 +1,55 @@
 doctype html
 html
   head
-    script(src="/js/qrcode.min.js" type="text/javascript")
     title Ticket Generation
-    link(rel="icon" href="/favicon.ico" type="image/x-icon")
 
-    style.
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      .status {
-        margin-top: 20px;
-        font-weight: bold;
-      }
-      .qr-code {
-        margin-top: 20px;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      .user-info {
-        font-weight: bold;
-      }
-      .logout-btn {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-        border-radius: 5px;
-      }
+    script(src="/js/qrcode.min.js" type="text/javascript")
+    link(rel="icon" href="/favicon.ico" type="image/x-icon")
+    link(rel="stylesheet" href="/css/style.css")
+
   body
-    // Header section with user info and logout button
     .header
       if user
-        .user-info Hello #{JSON.parse(user).name || JSON.parse(user).sub}!
+        div.profile-container
+          img.profile-image(src=JSON.parse(user).picture alt="Profile Picture")
+          div.profile-details
+            p.profile-name #{JSON.parse(user).name}
+            p.profile-email #{JSON.parse(user).email}
+            p.profile-sub #{JSON.parse(user).sub}
         button.logout-btn(onclick="location.href='/logout'") Logout
       else
-        .user-info You are not logged in
+        .user-info Niste prijavljeni
 
-    h1 Ticket Generation Form
+    a(href="/" style="text-decoration: none; color: black;") 
+      h1 e-Ulaznice
 
-    form(id="ticketForm")
-      div
-        label(for="vatin") VATIN:
-        input(type="text" id="vatin" name="vatin" required)
-      div
-        label(for="firstName") First Name:
-        input(type="text" id="firstName" name="firstName" required)
-      div
-        label(for="lastName") Last Name:
-        input(type="text" id="lastName" name="lastName" required)
-      div
-        button(type="submit") Generate Ticket
+    h1 Generiranje ulaznice
+
+    div.form-container
+      h1 Obrazac ulaznice
+
+      form(id="ticketForm")
+        div
+          label(for="vatin") VATIN:
+          input(type="text" id="vatin" name="vatin" required placeholder="Unesite VATIN" maxlength="11")
+        div
+          label(for="firstName") Ime:
+          input(type="text" id="firstName" name="firstName" required placeholder="Unesite vaše ime")
+        div
+          label(for="lastName") Prezime:
+          input(type="text" id="lastName" name="lastName" required placeholder="Unesite vaše ime")
+        div.error(id="errorMessage")
+
+        if user
+          div
+            button(type="submit") Generiraj
+        else
+          div
+            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Prijavite se
+
 
     div(class="status" id="statusMessage")
 
-    // QR Code display container
     div(id="qrCodeContainer")
 
     script.
@@ -68,11 +57,32 @@ html
         e.preventDefault();
 
         const formData = {
-          vatin: document.getElementById('vatin').value,
-          firstName: document.getElementById('firstName').value,
-          lastName: document.getElementById('lastName').value,
+          vatin: document.getElementById('vatin').value.trim(),
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
         };
+        const errorMessage = document.getElementById('errorMessage');
         console.log("Form data: ", formData)
+
+        const vatinPattern = /^\d{11}$/;
+        const alphaPattern = /^[A-Za-z]+$/;
+
+        errorMessage.textContent = '';
+
+        if (!vatinPattern.test(formData.vatin)) {
+          errorMessage.textContent = 'VATIN mora biti broj od 11 znamenaka';
+          return;
+        }
+
+        if (!alphaPattern.test(formData.firstName)) {
+          errorMessage.textContent = 'Ime mora sadržavati samo slova.';
+          return;
+        }
+
+        if (!alphaPattern.test(formData.lastName)) {
+          errorMessage.textContent = 'Prezime mora sadržavati samo slova.';
+          return;
+        }
 
         try {
           const response = await fetch('/generateTicket', {
@@ -109,7 +119,7 @@ html
 
             } else {
               console.error('No ticket ID received for QR code generation.');
-              document.getElementById('statusMessage').textContent = 'No ticket ID received.';
+              document.getElementById('statusMessage').textContent = 'Nije dohvaćen ID ulaznice.';
               document.getElementById('statusMessage').style.color = 'red';
             }
           } else {
@@ -118,7 +128,7 @@ html
           }
         } catch (error) {
           console.error('Fetch error:', error); 
-          document.getElementById('statusMessage').textContent = 'An error occurred. Please try again.';
+          document.getElementById('statusMessage').textContent = 'Dogodila se pogreška. Pokušajte ponovno.';
           document.getElementById('statusMessage').style.color = 'red';
         }
       });

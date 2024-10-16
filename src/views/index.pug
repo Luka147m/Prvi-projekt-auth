@@ -2,63 +2,39 @@ doctype html
 html
   head
     title Početna stranica
-    style.
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      .user-info {
-        font-size: 18px;
-        font-weight: bold;
-      }
-      .action-btn {
-        background-color: #008CBA;
-        color: white;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-        border-radius: 5px;
-        font-size: 16px;
-      }
-      .action-btn.logout {
-        background-color: #f44336;
-      }
-      .ticket-info {
-        font-size: 16px;
-        margin-top: 20px;
-      }
+
+    link(rel="icon" href="/favicon.ico" type="image/x-icon")
+    link(rel="stylesheet" href="/css/style.css")
+
   body
-    // Header section with user info and buttons for login/logout
     .header
-      if !username
-        .user-info Dobrodošli!
-        button.action-btn(onclick="location.href='/login'") Prijavi se
+      if user
+        div.profile-container
+          img.profile-image(src=JSON.parse(user).picture alt="Profile Picture")
+          div.profile-details
+            p.profile-name #{JSON.parse(user).name}
+            p.profile-email #{JSON.parse(user).email}
+            p.profile-sub #{JSON.parse(user).sub}
+        button.logout-btn(onclick="location.href='/logout'") Logout
       else
-        .user-info Pozdrav #{username}!
-        button.action-btn.logout(onclick="location.href='/logout'") Odjava
+        .user-info Niste prijavljeni
+        button.action-btn(onclick="location.href='/login'") Prijava
 
-    h1 e-Ulaznice - Početna
+    a(href="/" style="text-decoration: none; color: black;")
+      h1 e-Ulaznice - Početna
 
-    // Display ticket count
+
     p.ticket-info Broj ukupno generiranih ulaznica:
-    pre#result Osvježavam...
+    pre#result.result Osvježavam...
 
-    // Button for generating a new ticket
     button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
 
-    // Script to fetch and update the ticket count every 5 seconds
     script.
       function fetchTicketCount() {
         fetch('/ticketCount')
           .then(response => response.json())
           .then(data => {
-            document.getElementById('result').textContent = "Broj ukupno generiranih ulaznica: " + data.count;
+            document.getElementById('result').textContent =  data.count;
           })
           .catch(error => console.error('Error fetching data', error));
       }

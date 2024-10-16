@@ -40,12 +40,8 @@ app.use((req: Request, res: Response, next) => {
 
 
 app.get('/', async (req: Request, res: Response) => {
-
-  let username: string | undefined;
-  if (req.oidc.isAuthenticated()) {
-    username = req.oidc.user?.name ?? req.oidc.user?.sub;
-  }
-  res.render('index', { username });
+  const user = JSON.stringify(req.oidc.user);
+  res.render('index', { user });
 
 })
 
@@ -116,20 +112,37 @@ async function generateTicket({ vatin, firstName, lastName }: TicketParams): Pro
 }
 
 app.post('/generateTicket', async (req: Request, res: Response): Promise<Response> => {
-  const { vatin, firstName, lastName }: TicketParams = req.body;
+  const { vatin, firstName, lastName } = Object.fromEntries(
+    Object.entries(req.body).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+  ) as unknown as TicketParams;
 
   if (!vatin || !firstName || !lastName) {
-    return res.status(400).json({ error: 'Missing required fields: vatin, firstName, lastName' });
+    return res.status(400).json({ error: 'Nedostaje jedno od vrijednosti: vatin, firstName, lastName' });
+  }
+
+  const vatinPattern = /^\d{11}$/;
+  const alphaPattern = /^[A-Za-z]+$/;
+
+  if (!vatinPattern.test(vatin)) {
+    return res.status(400).json({ error: 'VATIN mora biti broj od 11 znamenaka.' });
+  }
+
+  if (!alphaPattern.test(firstName)) {
+    return res.status(400).json({ error: 'Ime mora sadržavati samo slova.' });
+  }
+
+  if (!alphaPattern.test(lastName)) {
+    return res.status(400).json({ error: 'Prezime mora sadržavati samo slova.' });
   }
 
   try {
     const ticketId = await generateTicket({ vatin, firstName, lastName });
     // console.log(ticketId)
-    return res.status(201).json({ message: 'Ticket generated successfully', ticketId: ticketId });
+    return res.status(201).json({ message: 'Ulaznica uspješno generirana', ticketId: ticketId });
   } catch (error) {
     // console.error('Failed to generate ticket:', error);
 
-    const errorMessage = (error as Error).message || 'Failed to generate ticket';
+    const errorMessage = (error as Error).message || 'Ulaznica nije uspješno generirana';
     return res.status(500).json({ error: errorMessage });
   }
 });
@@ -156,7 +169,7 @@ app.get('/ticket/:id', requiresAuth(), async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).send('Ticket not found');
+      return res.status(404).send('Ulaznica nije pronađena');
     }
 
     const ticket = result.rows[0];
@@ -191,6 +204,3 @@ if (externalUrl) {
       console.log(`Server running locally at https://localhost:${port}/`);
     });
 }
-
-
-
