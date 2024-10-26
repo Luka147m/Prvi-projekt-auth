@@ -189,11 +189,11 @@ app.post('/generateTicket', checkJwt, async (req: Request, res: Response): Promi
   ) as unknown as TicketParams;
 
   if (!vatin || !firstName || !lastName) {
-    return res.status(400).json({ error: 'Nedostaje jedno od vrijednosti: vatin, firstName, lastName' });
+    return res.status(400).json({ error: 'Nedostaje neka od vrijednosti u tijelu zahtjeva: vatin, firstName, lastName' });
   }
 
   const vatinPattern = /^\d{11}$/;
-  const alphaPattern = /^[A-Za-z]+$/;
+  const alphaPattern = /^[A-Za-zčćžšđČĆŽŠĐ]+$/u;
 
   if (!vatinPattern.test(vatin)) {
     return res.status(400).json({ error: 'VATIN mora biti broj od 11 znamenaka.' });
