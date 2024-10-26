@@ -50,16 +50,19 @@ const checkJwt = expressjwt({
   algorithms: ['RS256']
 });
 
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: true,
-    httpOnly: true,
-    maxAge: 60 * 60 * 1000
-  }
-}));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: true,
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000
+    }
+  }));
+}
 
 app.use(auth(config));
 app.use(express.json());
