@@ -4,18 +4,29 @@ import path from 'path';
 import https from 'https';
 import fs from 'fs';
 import { auth, requiresAuth } from 'express-openid-connect';
+import session from 'express-session';
+import { expressjwt, GetVerificationKey } from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
+import axios from 'axios';
 
 const app = express();
 
+const sessionSecret = process.env.SESSION_SECRET || 'cookiemonsterateallthecookies';
 const externalUrl = process.env.EXTERNAL_URL || null;
 const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 8000;
 const baseUrl = process.env.NODE_ENV === 'production'
   ? 'https://prvi-projekt-auth-web.onrender.com'
   : `https://localhost:${port}`;
 
+declare module 'express-session' {
+  interface SessionData {
+    accessToken: string;
+  }
+}
+
 const config = {
   authRequired: false,
-  idpLogout: true, //login not only from the app, but also from identity provider
+  idpLogout: true,
   secret: process.env.SECRET,
   baseURL: baseUrl,
   clientID: process.env.CLIENT_ID,
@@ -26,12 +37,34 @@ const config = {
   },
 };
 
+const checkJwt = expressjwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+  }) as GetVerificationKey,
+  audience: process.env.AUTH0_AUDIENCE,
+  issuer: process.env.AUTH0_DOMAIN + "/",
+  algorithms: ['RS256']
+});
+
+app.use(session({
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: true,
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000
+  }
+}));
+
 app.use(auth(config));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist/public')));
 app.set('views', path.join(__dirname, '../dist/views'));
 app.set("view engine", "pug");
-
 
 app.use((req: Request, res: Response, next) => {
   res.locals.externalUrl = externalUrl || 'http://localhost:8000';
@@ -41,9 +74,41 @@ app.use((req: Request, res: Response, next) => {
 
 app.get('/', async (req: Request, res: Response) => {
   const user = JSON.stringify(req.oidc.user);
-  res.render('index', { user });
 
+  if (req.oidc.isAuthenticated()) {
+    try {
+      const accessToken = await getAccessToken();
+      // console.log('Access Token:', accessToken);
+      req.session.accessToken = accessToken;
+    } catch (error) {
+      // console.error('Error retrieving access token:', error);
+    }
+  }
+  res.render('index', { user });
 })
+
+async function getAccessToken(): Promise<string> {
+  var options = {
+    method: 'POST',
+    url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    data: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: `${process.env.M2M_CLIENT_ID}`,
+      client_secret: `${process.env.M2M_CLIENT_SECRET}`,
+      audience: `${process.env.AUTH0_AUDIENCE}`
+    })
+  };
+
+  try {
+    const response = await axios.request(options);
+    // console.log(response.data);
+    return response.data.access_token;
+  } catch (error) {
+    // console.error('Error retrieving access token:', error);
+    throw new Error('Failed to retrieve access token');
+  }
+}
 
 app.get("/login", (req: Request, res: Response) => {
   res.oidc.login({
@@ -53,17 +118,22 @@ app.get("/login", (req: Request, res: Response) => {
 });
 
 app.get("/logout", (req: Request, res: Response) => {
-  res.oidc.logout({
-    returnTo: '/'
+  req.session.destroy(err => {
+    if (err) {
+      return console.error('Failed to destroy session:', err);
+    }
+    res.oidc.logout({
+      returnTo: '/'
+    });
   });
 });
 
-app.get('/generateTicket', requiresAuth(), async (req: Request, res: Response) => {
+app.get('/generateTicket', async (req: Request, res: Response) => {
   const user = JSON.stringify(req.oidc.user);
-
   res.render("generateTicket", {
     baseUrl: baseUrl,
-    user: user
+    user: user,
+    accessToken: req.session.accessToken
   })
 })
 
@@ -109,7 +179,7 @@ async function generateTicket({ vatin, firstName, lastName }: TicketParams): Pro
   }
 }
 
-app.post('/generateTicket', async (req: Request, res: Response): Promise<Response> => {
+app.post('/generateTicket', checkJwt, async (req: Request, res: Response): Promise<Response> => {
   const { vatin, firstName, lastName } = Object.fromEntries(
     Object.entries(req.body).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
   ) as unknown as TicketParams;
@@ -136,13 +206,28 @@ app.post('/generateTicket', async (req: Request, res: Response): Promise<Respons
   try {
     const ticketId = await generateTicket({ vatin, firstName, lastName });
     // console.log(ticketId)
-    return res.status(201).json({ message: 'Ulaznica uspješno generirana', ticketId: ticketId });
+    return res.status(201).json({ message: 'Ulaznica uspješno generirana', ticketId: ticketId, ticketQRcodeUrl: `${baseUrl}/ticket/${ticketId}` });
   } catch (error) {
     // console.error('Failed to generate ticket:', error);
 
     const errorMessage = (error as Error).message || 'Ulaznica nije uspješno generirana';
     return res.status(500).json({ error: errorMessage });
   }
+});
+
+app.use((err: any, req: any, res: any, next: any) => {
+  if (err.name === 'UnauthorizedError') {
+    // console.error('JWT validation error:', err);
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized: Invalid or missing token'
+    });
+  }
+  console.error('err:', err);
+  return res.status(500).json({
+    success: false,
+    message: 'Internal Server Error'
+  });
 });
 
 

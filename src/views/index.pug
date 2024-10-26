@@ -26,10 +26,7 @@ html
     p.ticket-info Broj ukupno generiranih ulaznica:
     pre#result.result Osvježavam...
 
-    if user
-      button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
-    else 
-      h3 Da bi ste kupili ulaznicu prvo se morate prijaviti
+    button.action-btn(onclick="location.href='/generateTicket'") Kupi ulaznicu
 
     script.
       function fetchTicketCount() {

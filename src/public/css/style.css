@@ -268,3 +268,16 @@ body {
 .qr-code-container:empty {
   display: none;
 }
+
+.code {
+  padding: 10px;
+  border-radius: 5px;
+  overflow: auto;
+  color: #000;
+  border: 1px solid #61dafb;
+  background-color: #ccc;
+}
+
+.instructions {
+  max-width: 60%;
+}

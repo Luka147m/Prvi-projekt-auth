@@ -24,6 +24,25 @@ html
         button.login-btn(onclick="location.href='/login'") Prijava
 
     h1 Generiranje ulaznice
+    div.instructions
+      p Stranica za lakše generiranje ulaznica, potrebno je biti prijavljen kako bi dobili accessToken za m2m auth
+      p Isto se može postići dobivanjem accessTokena pomoću cURL-a i zatim slanje POST zahtjeva na /generateTicket <br> pri kojem se u headeru authorization mora postaviti na bearer token i dodati naš accessToken, te u tijelu zahtjeva JSON objekt s vrijednostima {vatin, firstName, lastName} <br> VATIN odnosno OIB je isključivo broj od 11 znamenki, dok ime i prezime smiju sadržavati samo znakove abecede
+      p U slučaju da je obrazac zaključan, ponovo se prijaviti
+      pre.code
+        code.language-shell
+          | curl --request POST \
+          | --url 'https://{yourDomain}/oauth/token' \
+          |  --header 'content-type: application/x-www-form-urlencoded' \
+          |  --data grant_type=client_credentials \
+          |  --data client_id=YOUR_CLIENT_ID \
+          |  --data client_secret=YOUR_CLIENT_SECRET \
+          |  --data audience=YOUR_API_IDENTIFIER
+          |
+          | curl --request POST \
+          |   --url '#{baseUrl}/generateTicket' \
+          |   --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+          |   --header 'Content-Type: application/json' \
+          |   --data '{ "vatin": "12345678901", "firstName": "Ime", "lastName": "Prezime" }'
 
     div.form-container
       h1 Obrazac ulaznice
@@ -40,12 +59,12 @@ html
           input(type="text" id="lastName" name="lastName" required placeholder="Unesite vaše ime")
         div.error(id="errorMessage")
 
-        if user
+        if accessToken
           div
             button(type="submit") Generiraj
         else
           div
-            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Prijavite se
+            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Prijavite se da bi dobili accessToken
 
 
     div
@@ -89,6 +108,7 @@ html
           const response = await fetch('/generateTicket', {
             method: 'POST',
             headers: {
+              'Authorization': `Bearer #{accessToken}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
