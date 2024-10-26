@@ -4,15 +4,15 @@ import path from 'path';
 import https from 'https';
 import fs from 'fs';
 import { auth, requiresAuth } from 'express-openid-connect';
-import session from 'express-session';
+// import session from 'express-session';
 import { expressjwt, GetVerificationKey } from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
-import axios from 'axios';
+// import axios from 'axios';
 import QRCode from 'qrcode';
 
 const app = express();
 
-const sessionSecret = process.env.SESSION_SECRET || 'cookiemonsterateallthecookies';
+// const sessionSecret = process.env.SESSION_SECRET || 'cookiemonsterateallthecookies';
 const externalUrl = process.env.EXTERNAL_URL || null;
 const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 8000;
 const baseUrl = process.env.NODE_ENV === 'production'
@@ -51,18 +51,18 @@ const checkJwt = expressjwt({
 });
 
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(session({
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: true,
-      httpOnly: true,
-      maxAge: 60 * 60 * 1000
-    }
-  }));
-}
+// if (process.env.NODE_ENV === 'development') {
+//   app.use(session({
+//     secret: sessionSecret,
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: {
+//       secure: true,
+//       httpOnly: true,
+//       maxAge: 60 * 60 * 1000
+//     }
+//   }));
+// }
 
 app.use(auth(config));
 app.use(express.json());
@@ -78,42 +78,42 @@ app.use((req: Request, res: Response, next) => {
 
 app.get('/', async (req: Request, res: Response) => {
   const user = JSON.stringify(req.oidc.user);
-  if (process.env.NODE_ENV === 'development') {
-    if (req.oidc.isAuthenticated()) {
-      try {
-        const accessToken = await getAccessToken();
-        // console.log('Access Token:', accessToken);
-        req.session.accessToken = accessToken;
-      } catch (error) {
-        // console.error('Error retrieving access token:', error);
-      }
-    }
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   if (req.oidc.isAuthenticated()) {
+  //     try {
+  //       const accessToken = await getAccessToken();
+  //       // console.log('Access Token:', accessToken);
+  //       req.session.accessToken = accessToken;
+  //     } catch (error) {
+  //       // console.error('Error retrieving access token:', error);
+  //     }
+  //   }
+  // }
   res.render('index', { user });
 })
 
-async function getAccessToken(): Promise<string> {
-  var options = {
-    method: 'POST',
-    url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    data: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: `${process.env.M2M_CLIENT_ID}`,
-      client_secret: `${process.env.M2M_CLIENT_SECRET}`,
-      audience: `${process.env.AUTH0_AUDIENCE}`
-    })
-  };
+// async function getAccessToken(): Promise<string> {
+//   var options = {
+//     method: 'POST',
+//     url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
+//     headers: { 'content-type': 'application/x-www-form-urlencoded' },
+//     data: new URLSearchParams({
+//       grant_type: 'client_credentials',
+//       client_id: `${process.env.M2M_CLIENT_ID}`,
+//       client_secret: `${process.env.M2M_CLIENT_SECRET}`,
+//       audience: `${process.env.AUTH0_AUDIENCE}`
+//     })
+//   };
 
-  try {
-    const response = await axios.request(options);
-    // console.log(response.data);
-    return response.data.access_token;
-  } catch (error) {
-    // console.error('Error retrieving access token:', error);
-    throw new Error('Failed to retrieve access token');
-  }
-}
+//   try {
+//     const response = await axios.request(options);
+//     // console.log(response.data);
+//     return response.data.access_token;
+//   } catch (error) {
+//     // console.error('Error retrieving access token:', error);
+//     throw new Error('Failed to retrieve access token');
+//   }
+// }
 
 app.get("/login", (req: Request, res: Response) => {
   res.oidc.login({
@@ -138,8 +138,6 @@ app.get('/generateTicket', async (req: Request, res: Response) => {
   res.render("generateTicket", {
     baseUrl: baseUrl,
     user: user,
-    accessToken: process.env.NODE_ENV === "development" ? req.session.accessToken : "blabla",
-    environment: process.env.NODE_ENV
   })
 })
 

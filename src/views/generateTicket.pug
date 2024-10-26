@@ -25,10 +25,9 @@ html
 
     h1 Generiranje ulaznice
     div.instructions
-      p Stranica za lakše generiranje ulaznica, potrebno je biti prijavljen kako bi dobili accessToken za m2m auth
-      p Isto se može postići dobivanjem accessTokena pomoću cURL-a i zatim slanje POST zahtjeva na /generateTicket <br> pri kojem se u headeru authorization mora postaviti na bearer token i dodati naš accessToken, te u tijelu zahtjeva JSON objekt s vrijednostima {vatin, firstName, lastName} <br> VATIN odnosno OIB je isključivo broj od 11 znamenki, dok ime i prezime smiju sadržavati samo znakove abecede
-      p U slučaju da je obrazac zaključan, ponovo se prijaviti
-      p Dostupno samo na localhost jer render onemogućuje session storage
+      //- p Stranica za lakše generiranje ulaznica, potrebno je biti prijavljen kako bi dobili accessToken za m2m auth
+      p Primjer generiranja ulaznice pomoću cURL-a i zatim slanje POST zahtjeva na /generateTicket <br> pri kojem se u headeru authorization mora postaviti na bearer token i dodati naš accessToken, te u tijelu zahtjeva JSON objekt s vrijednostima {vatin, firstName, lastName} <br> VATIN odnosno OIB je isključivo broj od 11 znamenki, dok ime i prezime smiju sadržavati samo znakove abecede
+      //- p U slučaju da je obrazac zaključan, ponovo se prijaviti
       pre.code
         code.language-shell
           | curl --request POST \
@@ -45,117 +44,117 @@ html
           |   --header 'Content-Type: application/json' \
           |   --data '{ "vatin": "12345678901", "firstName": "Ime", "lastName": "Prezime" }'
 
-    div.form-container
-      h1 Obrazac ulaznice
+    //- div.form-container
+    //-   h1 Obrazac ulaznice
 
-      form(id="ticketForm")
-        div
-          label(for="vatin") OIB:
-          input(type="text" id="vatin" name="vatin" required placeholder="Unesite OIB" maxlength="11")
-        div
-          label(for="firstName") Ime:
-          input(type="text" id="firstName" name="firstName" required placeholder="Unesite vaše ime")
-        div
-          label(for="lastName") Prezime:
-          input(type="text" id="lastName" name="lastName" required placeholder="Unesite vaše ime")
-        div.error(id="errorMessage")
+    //-   form(id="ticketForm")
+    //-     div
+    //-       label(for="vatin") OIB:
+    //-       input(type="text" id="vatin" name="vatin" required placeholder="Unesite OIB" maxlength="11")
+    //-     div
+    //-       label(for="firstName") Ime:
+    //-       input(type="text" id="firstName" name="firstName" required placeholder="Unesite vaše ime")
+    //-     div
+    //-       label(for="lastName") Prezime:
+    //-       input(type="text" id="lastName" name="lastName" required placeholder="Unesite vaše ime")
+    //-     div.error(id="errorMessage")
 
-        if accessToken && environment === 'development'
-          div
-            button(type="submit") Generiraj
-        else
-          div
-            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Dostupno samo tijekom development-a
+    //-     if accessToken && environment === 'development'
+    //-       div
+    //-         button(type="submit") Generiraj
+    //-     else
+    //-       div
+    //-         button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Dostupno samo tijekom development-a
 
 
-    div
-      h3.status(id="statusMessage")
+    //- div
+    //-   h3.status(id="statusMessage")
 
-    div.qr-code-container(id="qrCodeContainer")
+    //- div.qr-code-container(id="qrCodeContainer")
 
-    script.
-      document.getElementById('ticketForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    //- script.
+    //-   document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+    //-     e.preventDefault();
 
-        const formData = {
-          vatin: document.getElementById('vatin').value.trim(),
-          firstName: document.getElementById('firstName').value.trim(),
-          lastName: document.getElementById('lastName').value.trim(),
-        };
-        const errorMessage = document.getElementById('errorMessage');
-        console.log("Form data: ", formData)
+    //-     const formData = {
+    //-       vatin: document.getElementById('vatin').value.trim(),
+    //-       firstName: document.getElementById('firstName').value.trim(),
+    //-       lastName: document.getElementById('lastName').value.trim(),
+    //-     };
+    //-     const errorMessage = document.getElementById('errorMessage');
+    //-     console.log("Form data: ", formData)
 
-        const vatinPattern = /^\d{11}$/;
-        const alphaPattern = /^[A-Za-z]+$/;
+    //-     const vatinPattern = /^\d{11}$/;
+    //-     const alphaPattern = /^[A-Za-z]+$/;
 
-        errorMessage.textContent = '';
+    //-     errorMessage.textContent = '';
 
-        if (!vatinPattern.test(formData.vatin)) {
-          errorMessage.textContent = 'OIB mora biti broj od 11 znamenaka';
-          return;
-        }
+    //-     if (!vatinPattern.test(formData.vatin)) {
+    //-       errorMessage.textContent = 'OIB mora biti broj od 11 znamenaka';
+    //-       return;
+    //-     }
 
-        if (!alphaPattern.test(formData.firstName)) {
-          errorMessage.textContent = 'Ime mora sadržavati samo slova.';
-          return;
-        }
+    //-     if (!alphaPattern.test(formData.firstName)) {
+    //-       errorMessage.textContent = 'Ime mora sadržavati samo slova.';
+    //-       return;
+    //-     }
 
-        if (!alphaPattern.test(formData.lastName)) {
-          errorMessage.textContent = 'Prezime mora sadržavati samo slova.';
-          return;
-        }
+    //-     if (!alphaPattern.test(formData.lastName)) {
+    //-       errorMessage.textContent = 'Prezime mora sadržavati samo slova.';
+    //-       return;
+    //-     }
 
-        try {
-          const response = await fetch('/generateTicket', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer #{accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-          });
+    //-     try {
+    //-       const response = await fetch('/generateTicket', {
+    //-         method: 'POST',
+    //-         headers: {
+    //-           'Authorization': `Bearer #{accessToken}`,
+    //-           'Content-Type': 'application/json'
+    //-         },
+    //-         body: JSON.stringify(formData)
+    //-       });
 
-          const result = await response.json();
-          console.log('Result from server:', result);
+    //-       const result = await response.json();
+    //-       console.log('Result from server:', result);
 
-          if (response.ok) {
-            document.getElementById('statusMessage').textContent = result.message;
-            document.getElementById('statusMessage').style.color = 'green';
+    //-       if (response.ok) {
+    //-         document.getElementById('statusMessage').textContent = result.message;
+    //-         document.getElementById('statusMessage').style.color = 'green';
 
-            document.getElementById('qrCodeContainer').innerHTML = '';
+    //-         document.getElementById('qrCodeContainer').innerHTML = '';
 
-            const ticketId = result.ticketId;
-            console.log('Ticket ID for QR Code:', ticketId);
+    //-         const ticketId = result.ticketId;
+    //-         console.log('Ticket ID for QR Code:', ticketId);
 
-            if (ticketId) {
-              console.log('Attempting to generate QR code with ticket ID:', ticketId);
-              var qrCodeUrl = "#{baseUrl}/ticket/" + ticketId;
-              var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
-                text: qrCodeUrl,
-                width: 128,
-                height: 128,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-              });
+    //-         if (ticketId) {
+    //-           console.log('Attempting to generate QR code with ticket ID:', ticketId);
+    //-           var qrCodeUrl = "#{baseUrl}/ticket/" + ticketId;
+    //-           var qrcode = new QRCode(document.getElementById("qrCodeContainer"), {
+    //-             text: qrCodeUrl,
+    //-             width: 128,
+    //-             height: 128,
+    //-             colorDark : "#000000",
+    //-             colorLight : "#ffffff",
+    //-             correctLevel : QRCode.CorrectLevel.H
+    //-           });
 
-              const textElement = document.createElement('p');
-              textElement.innerHTML = `QR kod Vaše ulaznice<br>Dostupan i na sljedećem <a href="${qrCodeUrl}">linku</a>`;
-              textElement.style.textAlign = 'center';
-              qrCodeContainer.prepend(textElement);
+    //-           const textElement = document.createElement('p');
+    //-           textElement.innerHTML = `QR kod Vaše ulaznice<br>Dostupan i na sljedećem <a href="${qrCodeUrl}">linku</a>`;
+    //-           textElement.style.textAlign = 'center';
+    //-           qrCodeContainer.prepend(textElement);
 
-            } else {
-              console.error('No ticket ID received for QR code generation.');
-              document.getElementById('statusMessage').textContent = 'Nije dohvaćen ID ulaznice.';
-              document.getElementById('statusMessage').style.color = 'red';
-            }
-          } else {
-            document.getElementById('statusMessage').textContent = result.error;
-            document.getElementById('statusMessage').style.color = 'red';
-          }
-        } catch (error) {
-          console.error('Fetch error:', error); 
-          document.getElementById('statusMessage').textContent = 'Dogodila se pogreška. Pokušajte ponovno.';
-          document.getElementById('statusMessage').style.color = 'red';
-        }
-      });
+    //-         } else {
+    //-           console.error('No ticket ID received for QR code generation.');
+    //-           document.getElementById('statusMessage').textContent = 'Nije dohvaćen ID ulaznice.';
+    //-           document.getElementById('statusMessage').style.color = 'red';
+    //-         }
+    //-       } else {
+    //-         document.getElementById('statusMessage').textContent = result.error;
+    //-         document.getElementById('statusMessage').style.color = 'red';
+    //-       }
+    //-     } catch (error) {
+    //-       console.error('Fetch error:', error); 
+    //-       document.getElementById('statusMessage').textContent = 'Dogodila se pogreška. Pokušajte ponovno.';
+    //-       document.getElementById('statusMessage').style.color = 'red';
+    //-     }
+    //-   });
