@@ -28,6 +28,7 @@ html
       p Stranica za lakše generiranje ulaznica, potrebno je biti prijavljen kako bi dobili accessToken za m2m auth
       p Isto se može postići dobivanjem accessTokena pomoću cURL-a i zatim slanje POST zahtjeva na /generateTicket <br> pri kojem se u headeru authorization mora postaviti na bearer token i dodati naš accessToken, te u tijelu zahtjeva JSON objekt s vrijednostima {vatin, firstName, lastName} <br> VATIN odnosno OIB je isključivo broj od 11 znamenki, dok ime i prezime smiju sadržavati samo znakove abecede
       p U slučaju da je obrazac zaključan, ponovo se prijaviti
+      p Dostupno samo na localhost jer render onemogućuje session storage
       pre.code
         code.language-shell
           | curl --request POST \
@@ -59,12 +60,12 @@ html
           input(type="text" id="lastName" name="lastName" required placeholder="Unesite vaše ime")
         div.error(id="errorMessage")
 
-        if accessToken
+        if accessToken && environment === 'development'
           div
             button(type="submit") Generiraj
         else
           div
-            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Prijavite se da bi ste dobili accessToken
+            button(type="button" disabled style="background-color: #ccc; color: #666; cursor: not-allowed;") Dostupno samo tijekom development-a
 
 
     div

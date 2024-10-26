@@ -8,6 +8,7 @@ import session from 'express-session';
 import { expressjwt, GetVerificationKey } from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
 import axios from 'axios';
+import QRCode from 'qrcode';
 
 const app = express();
 
@@ -74,14 +75,15 @@ app.use((req: Request, res: Response, next) => {
 
 app.get('/', async (req: Request, res: Response) => {
   const user = JSON.stringify(req.oidc.user);
-
-  if (req.oidc.isAuthenticated()) {
-    try {
-      const accessToken = await getAccessToken();
-      // console.log('Access Token:', accessToken);
-      req.session.accessToken = accessToken;
-    } catch (error) {
-      // console.error('Error retrieving access token:', error);
+  if (process.env.NODE_ENV === 'development') {
+    if (req.oidc.isAuthenticated()) {
+      try {
+        const accessToken = await getAccessToken();
+        // console.log('Access Token:', accessToken);
+        req.session.accessToken = accessToken;
+      } catch (error) {
+        // console.error('Error retrieving access token:', error);
+      }
     }
   }
   res.render('index', { user });
@@ -133,7 +135,8 @@ app.get('/generateTicket', async (req: Request, res: Response) => {
   res.render("generateTicket", {
     baseUrl: baseUrl,
     user: user,
-    accessToken: req.session.accessToken
+    accessToken: req.session.accessToken,
+    environment: process.env.NODE_ENV
   })
 })
 
@@ -205,8 +208,9 @@ app.post('/generateTicket', checkJwt, async (req: Request, res: Response): Promi
 
   try {
     const ticketId = await generateTicket({ vatin, firstName, lastName });
+    const qrCodeData = await QRCode.toDataURL(`${baseUrl}/ticket/${ticketId}`);
     // console.log(ticketId)
-    return res.status(201).json({ message: 'Ulaznica uspješno generirana', ticketId: ticketId, ticketQRcodeUrl: `${baseUrl}/ticket/${ticketId}` });
+    return res.status(201).json({ message: 'Ulaznica uspješno generirana', ticketId: ticketId, ticketQRcodeUrl: `${baseUrl}/ticket/${ticketId}`, qrCode: qrCodeData });
   } catch (error) {
     // console.error('Failed to generate ticket:', error);
 
