@@ -138,7 +138,7 @@ app.get('/generateTicket', async (req: Request, res: Response) => {
   res.render("generateTicket", {
     baseUrl: baseUrl,
     user: user,
-    accessToken: req.session.accessToken,
+    accessToken: process.env.NODE_ENV === "development" ? req.session.accessToken : "blabla",
     environment: process.env.NODE_ENV
   })
 })
