@@ -123,14 +123,15 @@ app.get("/login", (req: Request, res: Response) => {
 });
 
 app.get("/logout", (req: Request, res: Response) => {
-  req.session.destroy(err => {
-    if (err) {
-      return console.error('Failed to destroy session:', err);
-    }
-    res.oidc.logout({
-      returnTo: '/'
-    });
+  res.oidc.logout({
+    returnTo: '/'
   });
+
+  // req.session.destroy(err => {
+  //   if (err) {
+  //     return console.error('Failed to destroy session:', err);
+  //   }
+  // });
 });
 
 app.get('/generateTicket', async (req: Request, res: Response) => {
@@ -225,14 +226,14 @@ app.use((err: any, req: any, res: any, next: any) => {
     // console.error('JWT validation error:', err);
     return res.status(401).json({
       success: false,
-      message: 'Unauthorized: Invalid or missing token'
+      message: 'Unauthorized: Neispravan token ili nedostaje'
     });
   }
 
   if (err instanceof SyntaxError && (err as any).status === 400 && 'body' in err) {
     return res.status(400).json({
       success: false,
-      message: 'Bad Request: Invalid JSON format'
+      message: 'Bad Request: Neispravan JSON format'
     });
   }
   // console.error('err:', err);
