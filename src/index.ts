@@ -228,7 +228,14 @@ app.use((err: any, req: any, res: any, next: any) => {
       message: 'Unauthorized: Invalid or missing token'
     });
   }
-  console.error('err:', err);
+
+  if (err instanceof SyntaxError && (err as any).status === 400 && 'body' in err) {
+    return res.status(400).json({
+      success: false,
+      message: 'Bad Request: Invalid JSON format'
+    });
+  }
+  // console.error('err:', err);
   return res.status(500).json({
     success: false,
     message: 'Internal Server Error'
